@@ -2,36 +2,32 @@
 // Main Scraper Orchestrator
 // ============================================
 
-import type { Product, ScraperResult, Brand } from '@/types';
+import type { Product, ScraperResult, Brand, StoreParser } from '@/types';
 import { getBrowser, createContext, createPage, navigateWithStealth, closeContext, closeBrowser } from './browser';
 import { detectStore, log, logError, randomDelay } from './utils';
-import { parseZaraProduct, isValidZaraUrl } from './stores/zara';
+import { zaraParser } from './stores/zara';
 import { addProduct, updateProduct, getProductByUrl } from '@/lib/storage';
 
 /**
  * Store-specific parsers registry
  */
-const PARSERS: Record<Brand, {
-  parse: (html: string, url: string) => Partial<Product>;
-  isValidUrl: (url: string) => boolean;
-  waitForSelector?: string;
-  clickToOpenSizes?: string;  // Button to click to open size selector
-}> = {
-  zara: {
-    parse: parseZaraProduct,
-    isValidUrl: isValidZaraUrl,
-    clickToOpenSizes: '[data-qa-action="add-to-cart"]',  // Click "Adicionar" button to open size modal
-    waitForSelector: '.size-selector-sizes',  // Wait for sizes to load after click
-  },
+const PARSERS: Record<Brand, StoreParser> = {
+  zara: zaraParser,
   bershka: {
+    name: 'bershka',
+    baseUrl: 'https://www.bershka.com',
     parse: () => ({ brand: 'bershka', name: 'Not implemented' }),
     isValidUrl: () => false,
   },
   pullandbear: {
+    name: 'pullandbear',
+    baseUrl: 'https://www.pullandbear.com',
     parse: () => ({ brand: 'pullandbear', name: 'Not implemented' }),
     isValidUrl: () => false,
   },
   massimodutti: {
+    name: 'massimodutti',
+    baseUrl: 'https://www.massimodutti.com',
     parse: () => ({ brand: 'massimodutti', name: 'Not implemented' }),
     isValidUrl: () => false,
   },
@@ -117,22 +113,9 @@ export async function scrapeProduct(
       };
     }
 
-    // Click button to open size selector (if defined for this store)
-    if (parser.clickToOpenSizes) {
-      try {
-        log('SCRAPER', `Clicking "${parser.clickToOpenSizes}" to open size selector...`);
-        await page.waitForSelector(parser.clickToOpenSizes, { timeout: 10000 });
-        await page.click(parser.clickToOpenSizes);
-        log('SCRAPER', 'Clicked add button, waiting for size selector...');
-
-        // Wait for size selector to appear after clicking
-        if (parser.waitForSelector) {
-          await page.waitForSelector(parser.waitForSelector, { timeout: 10000 });
-          log('SCRAPER', `Size selector found: ${parser.waitForSelector}`);
-        }
-      } catch (error) {
-        log('SCRAPER', `Could not open size selector: ${error instanceof Error ? error.message : 'unknown'}`);
-      }
+    // Prepare page for scraping (store-specific interaction, e.g., opening size selector)
+    if (parser.preparePage) {
+      await parser.preparePage(page);
     }
 
     // Get page HTML
@@ -140,14 +123,6 @@ export async function scrapeProduct(
 
     // Parse HTML
     const productData = parser.parse(html, url);
-
-    // Debug: save HTML if sizes not found
-    if (!productData.sizes || productData.sizes.length === 0) {
-      const debugPath = `data/debug-sizes-${Date.now()}.html`;
-      const fs = require('fs');
-      fs.writeFileSync(debugPath, html, 'utf-8');
-      log('SCRAPER', `No sizes found - saved debug HTML to ${debugPath}`);
-    }
 
     // Validate parsed data
     if (!productData.name || productData.name === 'Unknown Product') {
@@ -176,6 +151,7 @@ export async function scrapeProduct(
       brand: store,
       name: productData.name,
       currentPrice: productData.currentPrice || 0,
+      originalPrice: productData.originalPrice || null,
       oldPrice: productData.oldPrice || null,
       discount: productData.discount || null,
       sizes: productData.sizes || [],

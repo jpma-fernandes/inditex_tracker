@@ -99,6 +99,11 @@ export default function ProductCard({ product, onDelete, onRefresh }: ProductCar
               {product.oldPrice.toFixed(2)}
             </span>
           )}
+          {product.originalPrice && (
+            <span className="text-lg text-gray-700 line-through">
+              {product.originalPrice.toFixed(2)}
+            </span>
+          )}
         </div>
       </div>
       

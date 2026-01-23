@@ -15,6 +15,7 @@ export interface Product {
   brand: Brand;
   name: string;
   currentPrice: number;
+  originalPrice: number | null;
   oldPrice: number | null;
   discount: number | null; // percentage (e.g., 20 for 20%)
   sizes: SizeStock[];
@@ -51,6 +52,7 @@ export interface StoreParser {
   baseUrl: string;
   parse: (html: string, url: string) => Partial<Product>;
   isValidUrl: (url: string) => boolean;
+  preparePage?: (page: import('playwright').Page) => Promise<void>;  // Browser interaction before parsing
 }
 
 // Storage types

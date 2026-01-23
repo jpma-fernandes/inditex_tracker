@@ -26,15 +26,23 @@ const SELECTORS = {
     '.price-current__amount',
     '.price__amount--current',
     '[data-qa="product-price-current"]',
-    '.money-amount__main',
+    '.money-amount__main', //correct
   ],
 
   // Old/original price (when on sale)
   oldPrice: [
     '.price-old__amount',
     '.price__amount--old',
-    '[data-qa="product-price-old"]',
+    '[data-qa="product-amount-old"]',
     '.price-old .money-amount__main',
+  ],
+
+  //Original price when there are 3 prices
+  originalPrice: [
+    '.price-original__amount',
+    '.price__amount',
+    '[data-qa="product-amount-original"]',
+    '.price__amount-original',
   ],
 
   // Discount percentage
@@ -219,10 +227,12 @@ export function parseZaraProduct(html: string, url: string): Partial<Product> {
   }
 
   // Extract prices
+  const originalPriceText = extractText($, SELECTORS.originalPrice);
   const currentPriceText = extractText($, SELECTORS.currentPrice);
   const oldPriceText = extractText($, SELECTORS.oldPrice);
   const discountText = extractText($, SELECTORS.discount);
 
+  const originalPrice = parsePrice(originalPriceText);
   const currentPrice = parsePrice(currentPriceText);
   const oldPrice = parsePrice(oldPriceText);
   let discount = parseDiscount(discountText);
@@ -245,6 +255,7 @@ export function parseZaraProduct(html: string, url: string): Partial<Product> {
     brand: 'zara',
     name: name || 'Unknown Product',
     currentPrice: currentPrice || 0,
+    originalPrice,
     oldPrice,
     discount,
     sizes,
@@ -270,6 +281,27 @@ export function isValidZaraUrl(url: string): boolean {
 }
 
 /**
+ * Prepare page for scraping by clicking the add button to open size selector
+ * This is Zara-specific logic that handles the size modal interaction
+ */
+export async function preparePage(page: import('playwright').Page): Promise<void> {
+  const ADD_BUTTON_SELECTOR = '[data-qa-action="add-to-cart"]';
+  const SIZE_SELECTOR = '.size-selector-sizes';
+
+  try {
+    log('ZARA_PARSER', `Clicking "${ADD_BUTTON_SELECTOR}" to open size selector...`);
+    await page.waitForSelector(ADD_BUTTON_SELECTOR, { timeout: 10000 });
+    await page.click(ADD_BUTTON_SELECTOR);
+    log('ZARA_PARSER', 'Clicked add button, waiting for size selector...');
+
+    await page.waitForSelector(SIZE_SELECTOR, { timeout: 10000 });
+    log('ZARA_PARSER', `Size selector found: ${SIZE_SELECTOR}`);
+  } catch (error) {
+    log('ZARA_PARSER', `Could not open size selector: ${error instanceof Error ? error.message : 'unknown'}`);
+  }
+}
+
+/**
  * Zara store parser configuration
  */
 export const zaraParser: StoreParser = {
@@ -277,6 +309,7 @@ export const zaraParser: StoreParser = {
   baseUrl: 'https://www.zara.com',
   parse: parseZaraProduct,
   isValidUrl: isValidZaraUrl,
+  preparePage,  // Browser interaction specific to Zara
 };
 
 export default zaraParser;
