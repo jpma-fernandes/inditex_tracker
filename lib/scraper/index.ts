@@ -15,11 +15,13 @@ const PARSERS: Record<Brand, {
   parse: (html: string, url: string) => Partial<Product>;
   isValidUrl: (url: string) => boolean;
   waitForSelector?: string;
+  clickToOpenSizes?: string;  // Button to click to open size selector
 }> = {
   zara: {
     parse: parseZaraProduct,
     isValidUrl: isValidZaraUrl,
-    waitForSelector: '.product-detail-info__header-name',
+    clickToOpenSizes: '[data-qa-action="add-to-cart"]',  // Click "Adicionar" button to open size modal
+    waitForSelector: '.size-selector-sizes',  // Wait for sizes to load after click
   },
   bershka: {
     parse: () => ({ brand: 'bershka', name: 'Not implemented' }),
@@ -50,9 +52,9 @@ export async function scrapeProduct(
   } = {}
 ): Promise<ScraperResult> {
   const { headless = true, saveToStorage = true, timeout = 60000 } = options;
-  
+
   log('SCRAPER', `Starting scrape for: ${url}`);
-  
+
   // Detect store
   const store = detectStore(url);
   if (!store) {
@@ -62,9 +64,9 @@ export async function scrapeProduct(
       errorCode: 'UNKNOWN',
     };
   }
-  
+
   log('SCRAPER', `Detected store: ${store}`);
-  
+
   // Get parser for store
   const parser = PARSERS[store];
   if (!parser) {
@@ -74,7 +76,7 @@ export async function scrapeProduct(
       errorCode: 'UNKNOWN',
     };
   }
-  
+
   // Validate URL
   if (!parser.isValidUrl(url)) {
     return {
@@ -83,32 +85,30 @@ export async function scrapeProduct(
       errorCode: 'UNKNOWN',
     };
   }
-  
+
   let browser = null;
   let context = null;
-  
+
   try {
     // Launch browser
     browser = await getBrowser({ headless, timeout });
-    
+
     // Create context with session persistence
     context = await createContext(browser, store, { timeout });
-    
+
     // Create page
     const page = await createPage(context);
-    
-    // Navigate with stealth measures
-    const navResult = await navigateWithStealth(page, url, {
-      waitForSelector: parser.waitForSelector,
-    });
-    
+
+    // Navigate with stealth measures (don't wait for size selector yet)
+    const navResult = await navigateWithStealth(page, url, {});
+
     if (!navResult.success) {
       await closeContext(context, store); // Still save session on failure
       return {
         success: false,
         error: navResult.error || 'Navigation failed',
-        errorCode: navResult.error === 'AKAMAI_BLOCKED' 
-          ? 'AKAMAI_BLOCKED' 
+        errorCode: navResult.error === 'AKAMAI_BLOCKED'
+          ? 'AKAMAI_BLOCKED'
           : navResult.error === 'AKAMAI_CHALLENGE'
             ? 'AKAMAI_CHALLENGE'
             : navResult.error === 'TIMEOUT'
@@ -116,37 +116,60 @@ export async function scrapeProduct(
               : 'UNKNOWN',
       };
     }
-    
-    // Small delay to let dynamic content load
-    await randomDelay(2000, 4000);
-    
+
+    // Click button to open size selector (if defined for this store)
+    if (parser.clickToOpenSizes) {
+      try {
+        log('SCRAPER', `Clicking "${parser.clickToOpenSizes}" to open size selector...`);
+        await page.waitForSelector(parser.clickToOpenSizes, { timeout: 10000 });
+        await page.click(parser.clickToOpenSizes);
+        log('SCRAPER', 'Clicked add button, waiting for size selector...');
+
+        // Wait for size selector to appear after clicking
+        if (parser.waitForSelector) {
+          await page.waitForSelector(parser.waitForSelector, { timeout: 10000 });
+          log('SCRAPER', `Size selector found: ${parser.waitForSelector}`);
+        }
+      } catch (error) {
+        log('SCRAPER', `Could not open size selector: ${error instanceof Error ? error.message : 'unknown'}`);
+      }
+    }
+
     // Get page HTML
     const html = await page.content();
-    
+
     // Parse HTML
     const productData = parser.parse(html, url);
-    
+
+    // Debug: save HTML if sizes not found
+    if (!productData.sizes || productData.sizes.length === 0) {
+      const debugPath = `data/debug-sizes-${Date.now()}.html`;
+      const fs = require('fs');
+      fs.writeFileSync(debugPath, html, 'utf-8');
+      log('SCRAPER', `No sizes found - saved debug HTML to ${debugPath}`);
+    }
+
     // Validate parsed data
     if (!productData.name || productData.name === 'Unknown Product') {
       logError('SCRAPER', 'Failed to parse product name - page structure may have changed');
-      
+
       // Save HTML for debugging
       const debugPath = `data/debug-${Date.now()}.html`;
       const fs = require('fs');
       fs.writeFileSync(debugPath, html, 'utf-8');
       log('SCRAPER', `Saved debug HTML to ${debugPath}`);
-      
+
       return {
         success: false,
         error: 'Could not extract product data. The page structure may have changed.',
         errorCode: 'PARSE_ERROR',
       };
     }
-    
+
     // Close context and save session
     await closeContext(context, store);
     context = null;
-    
+
     // Build full product object
     const now = new Date().toISOString();
     const fullProduct: Omit<Product, 'id' | 'createdAt'> = {
@@ -160,7 +183,7 @@ export async function scrapeProduct(
       imageUrl: productData.imageUrl || null,
       lastChecked: now,
     };
-    
+
     // Save to storage if requested
     let savedProduct: Product | undefined;
     if (saveToStorage) {
@@ -173,23 +196,23 @@ export async function scrapeProduct(
         log('SCRAPER', `Added new product: ${savedProduct.id}`);
       }
     }
-    
+
     log('SCRAPER', `Scrape completed successfully for: ${productData.name}`);
-    
+
     return {
       success: true,
       product: savedProduct || { ...fullProduct, id: 'temp', createdAt: now } as Product,
     };
-    
+
   } catch (error) {
     logError('SCRAPER', 'Scrape failed with exception', error);
-    
+
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
       errorCode: 'UNKNOWN',
     };
-    
+
   } finally {
     // Clean up
     if (context) {
@@ -218,28 +241,28 @@ export async function scrapeProducts(
 ): Promise<ScraperResult[]> {
   const { delayBetween = { min: 5000, max: 10000 } } = options;
   const results: ScraperResult[] = [];
-  
+
   log('SCRAPER', `Starting batch scrape for ${urls.length} products`);
-  
+
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     log('SCRAPER', `Processing ${i + 1}/${urls.length}: ${url}`);
-    
+
     const result = await scrapeProduct(url, options);
     results.push(result);
-    
+
     // Delay between requests (except for last one)
     if (i < urls.length - 1) {
       await randomDelay(delayBetween.min, delayBetween.max);
     }
   }
-  
+
   // Close browser after batch
   await closeBrowser();
-  
+
   const successCount = results.filter(r => r.success).length;
   log('SCRAPER', `Batch complete: ${successCount}/${urls.length} successful`);
-  
+
   return results;
 }
 
@@ -250,12 +273,12 @@ export async function scrapeProducts(
 export async function refreshAllProducts(): Promise<ScraperResult[]> {
   const { getProducts } = await import('@/lib/storage');
   const products = getProducts();
-  
+
   if (products.length === 0) {
     log('SCRAPER', 'No products to refresh');
     return [];
   }
-  
+
   const urls = products.map(p => p.url);
   return scrapeProducts(urls);
 }

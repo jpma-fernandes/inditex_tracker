@@ -20,7 +20,7 @@ const SELECTORS = {
     'h1[class*="product-detail"]',
     '[data-qa="product-name"]',
   ],
-  
+
   // Current price
   currentPrice: [
     '.price-current__amount',
@@ -28,7 +28,7 @@ const SELECTORS = {
     '[data-qa="product-price-current"]',
     '.money-amount__main',
   ],
-  
+
   // Old/original price (when on sale)
   oldPrice: [
     '.price-old__amount',
@@ -36,34 +36,14 @@ const SELECTORS = {
     '[data-qa="product-price-old"]',
     '.price-old .money-amount__main',
   ],
-  
+
   // Discount percentage
   discount: [
     '.price-current__discount-percentage',
     '.price__discount',
     '[data-qa="product-discount"]',
   ],
-  
-  // Size list items
-  sizeList: [
-    '.size-selector-list__item',
-    '.product-size-selector__size-list li',
-    '[data-qa="size-selector-item"]',
-  ],
-  
-  // Size label within list item
-  sizeLabel: [
-    '.product-size-info__main-label',
-    '.size-selector-sizes__label',
-    '[data-qa="size-label"]',
-  ],
-  
-  // Size availability text within list item
-  sizeAvailability: [
-    '.product-size-info__second-line',
-    '.size-selector-sizes__availability',
-  ],
-  
+
   // Product image
   image: [
     'img.media-image__image',
@@ -97,71 +77,101 @@ function extractText($: CheerioAPI, selectors: string[]): string | null {
 
 /**
  * Extract sizes and availability from the page
+ * Uses data-qa-action attribute on buttons to determine availability:
+ * - "size-in-stock" = available
+ * - "size-low-on-stock" = available but low stock (shows "Poucas unidades")
+ * - "size-out-of-stock" = sold out (shows "Ver similares")
  */
 function extractSizes($: CheerioAPI): SizeStock[] {
   const sizes: SizeStock[] = [];
-  
-  // Try each size list selector
-  for (const listSelector of SELECTORS.sizeList) {
-    const sizeItems = $(listSelector);
-    
-    if (sizeItems.length > 0) {
-      sizeItems.each((_, element) => {
+
+  // Primary selector: each <li> inside the size selector <ul>
+  // Structure: ul.size-selector-sizes > li.size-selector-sizes__size > button > div.label
+  const sizeItems = $('.size-selector-sizes > li');
+
+  if (sizeItems.length > 0) {
+    log('ZARA_PARSER', `Found ${sizeItems.length} size items using .size-selector-sizes > li`);
+
+    sizeItems.each((_, element) => {
+      const $item = $(element);
+      const $button = $item.find('button');
+
+      // Get size label from the label div inside the button
+      const sizeLabel = $button.find('.size-selector-sizes-size__label').first().text().trim();
+
+      if (!sizeLabel) {
+        log('ZARA_PARSER', 'Skipping size item - no label found');
+        return;
+      }
+
+      // Check availability via data-qa-action on the button
+      const action = $button.attr('data-qa-action') || '';
+
+      let available = false;
+      let lowStock = false;
+
+      if (action === 'size-in-stock') {
+        available = true;
+      } else if (action === 'size-low-on-stock') {
+        // Low stock - still available but limited
+        available = true;
+        lowStock = true;
+      } else if (action === 'size-out-of-stock') {
+        available = false;
+      } else {
+        // Fallback: check for disabled classes
+        const isDisabled =
+          $item.hasClass('size-selector-sizes__size--disabled') ||
+          $item.hasClass('size-selector-sizes-size--unavailable');
+        available = !isDisabled && $item.hasClass('size-selector-sizes-size--enabled');
+      }
+
+      sizes.push({
+        size: sizeLabel,
+        available,
+        lowStock: lowStock || undefined,
+      });
+    });
+  } else {
+    // Fallback: try older selector structure
+    log('ZARA_PARSER', 'Primary size selector not found, trying fallback selectors');
+
+    const fallbackItems = $('.size-selector-list__item, [data-qa="size-selector-item"]');
+
+    if (fallbackItems.length > 0) {
+      log('ZARA_PARSER', `Found ${fallbackItems.length} size items using fallback selector`);
+
+      fallbackItems.each((_, element) => {
         const $item = $(element);
-        
-        // Get size label
-        let sizeLabel: string | null = null;
-        for (const labelSelector of SELECTORS.sizeLabel) {
-          const label = $item.find(labelSelector).text().trim();
-          if (label) {
-            sizeLabel = label;
-            break;
-          }
-        }
-        
-        // Fallback: get text directly from item
+        const $button = $item.find('button');
+
+        // Try to get label
+        let sizeLabel = $item.find('.product-size-info__main-label').text().trim();
         if (!sizeLabel) {
-          sizeLabel = $item.text().trim().split('\n')[0]?.trim() || null;
+          sizeLabel = $item.find('[data-qa-qualifier="size-selector-sizes-size-label"]').text().trim();
         }
-        
+        if (!sizeLabel) {
+          sizeLabel = $item.text().trim().split('\n')[0]?.trim() || '';
+        }
+
         if (!sizeLabel) return;
-        
-        // Determine availability
-        // Check for disabled/unavailable classes
-        const isDisabled = 
-          $item.hasClass('size-selector-list__item--disabled') ||
-          $item.hasClass('size-selector-list__item--out-of-stock') ||
-          $item.find('[disabled]').length > 0 ||
-          $item.attr('aria-disabled') === 'true';
-        
-        // Check for low stock text
-        let lowStock = false;
-        let available = !isDisabled;
-        
-        for (const availSelector of SELECTORS.sizeAvailability) {
-          const availText = $item.find(availSelector).text().trim().toLowerCase();
-          if (availText) {
-            if (availText.includes('pocas unidades') || availText.includes('low stock') || availText.includes('últimas')) {
-              lowStock = true;
-              available = true;
-            }
-            if (availText.includes('agotado') || availText.includes('sold out') || availText.includes('ver similares')) {
-              available = false;
-            }
-          }
-        }
-        
+
+        // Check availability
+        const action = $button.attr('data-qa-action') || '';
+        const available = action === 'size-in-stock' || action === 'size-low-on-stock';
+        const lowStock = action === 'size-low-on-stock';
+
         sizes.push({
           size: sizeLabel,
           available,
           lowStock: lowStock || undefined,
         });
       });
-      
-      if (sizes.length > 0) break;
     }
   }
-  
+
+  log('ZARA_PARSER', `Extracted ${sizes.length} sizes: ${sizes.map(s => `${s.size}(${s.available ? 'ok' : 'out'})`).join(', ')}`);
+
   return sizes;
 }
 
@@ -194,9 +204,9 @@ function extractImage($: CheerioAPI): string | null {
  */
 export function parseZaraProduct(html: string, url: string): Partial<Product> {
   log('ZARA_PARSER', 'Parsing product page...');
-  
+
   const $ = cheerio.load(html);
-  
+
   // Extract product name
   const name = extractText($, SELECTORS.name);
   if (!name) {
@@ -207,30 +217,30 @@ export function parseZaraProduct(html: string, url: string): Partial<Product> {
       log('ZARA_PARSER', `Using title tag as fallback: ${title}`);
     }
   }
-  
+
   // Extract prices
   const currentPriceText = extractText($, SELECTORS.currentPrice);
   const oldPriceText = extractText($, SELECTORS.oldPrice);
   const discountText = extractText($, SELECTORS.discount);
-  
+
   const currentPrice = parsePrice(currentPriceText);
   const oldPrice = parsePrice(oldPriceText);
   let discount = parseDiscount(discountText);
-  
+
   // Calculate discount if we have both prices but no explicit discount
   if (!discount && currentPrice && oldPrice && oldPrice > currentPrice) {
     discount = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
   }
-  
+
   // Extract sizes
   const sizes = extractSizes($);
-  
+
   // Extract image
   const imageUrl = extractImage($);
-  
+
   // Log extraction results
   log('ZARA_PARSER', `Extracted: name="${name}", price=${currentPrice}, oldPrice=${oldPrice}, discount=${discount}%, sizes=${sizes.length}`);
-  
+
   return {
     brand: 'zara',
     name: name || 'Unknown Product',
