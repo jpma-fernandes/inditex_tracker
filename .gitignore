@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# prisma
+/prisma/migrations
+
 # Inditex Tracker - Local data
 /data/products.json
 /data/price-history.json

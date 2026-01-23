@@ -27,6 +27,7 @@ model Product {
   name         String
   currentPrice Float
   oldPrice     Float?
+  originalPrice Float?
   discount     Int?     // percentage (e.g., 20 for 20%)
   url          String   @unique
   imageUrl     String?
@@ -37,7 +38,7 @@ model Product {
   // Relations
   sizes        ProductSize[]
   priceHistory PriceHistory[]
-  stockHistory StockStatus[]
+  stockHistory StockSnapshot[]
 
   @@index([brand])
   @@index([lastChecked])
@@ -75,33 +76,19 @@ model PriceHistory {
 }
 
 // ============================================
-// StockStatus - Historical stock snapshots
+// StockSnapshot - Historical stock snapshots
+// Stores sizes as JSON: [{ size: "M", available: true, lowStock: false }]
 // ============================================
-model StockStatus {
+model StockSnapshot {
   id        String   @id @default(cuid())
   productId String
   timestamp DateTime @default(now())
+  sizes     Json     // Array of { size: string, available: boolean, lowStock?: boolean }
 
-  product Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sizes   StockStatusSize[]
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@index([timestamp])
-}
-
-// ============================================
-// StockStatusSize - Size data within a stock snapshot
-// ============================================
-model StockStatusSize {
-  id            String  @id @default(cuid())
-  stockStatusId String
-  size          String
-  available     Boolean
-  lowStock      Boolean @default(false)
-
-  stockStatus StockStatus @relation(fields: [stockStatusId], references: [id], onDelete: Cascade)
-
-  @@index([stockStatusId])
 }
 
 // ============================================
