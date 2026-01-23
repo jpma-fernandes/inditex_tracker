@@ -16,7 +16,7 @@ interface ProductCardProps {
 
 function SizeBadge({ size }: { size: SizeStock }) {
   const baseClasses = "px-2 py-1 text-xs font-medium rounded";
-  
+
   if (!size.available) {
     return (
       <span className={`${baseClasses} bg-gray-800 text-gray-500 line-through`}>
@@ -24,7 +24,7 @@ function SizeBadge({ size }: { size: SizeStock }) {
       </span>
     );
   }
-  
+
   if (size.lowStock) {
     return (
       <span className={`${baseClasses} bg-yellow-900/50 text-yellow-400 border border-yellow-700`}>
@@ -32,7 +32,7 @@ function SizeBadge({ size }: { size: SizeStock }) {
       </span>
     );
   }
-  
+
   return (
     <span className={`${baseClasses} bg-green-900/50 text-green-400 border border-green-700`}>
       {size.size}
@@ -64,49 +64,73 @@ export default function ProductCard({ product, onDelete, onRefresh }: ProductCar
 
   return (
     <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden hover:border-[#3a3a3a] transition-colors animate-slide-up">
-      {/* Header with brand and badges */}
-      <div className="p-4 border-b border-[#2a2a2a]">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            {/* Brand badge */}
-            <div className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded bg-gradient-to-r ${brandColors[product.brand]} text-white mb-2`}>
-              {product.brand}
-            </div>
-            
-            {/* Product name */}
-            <h3 className="font-medium text-white truncate" title={product.name}>
-              {product.name}
-            </h3>
+      {/* Product Image */}
+      {product.imageUrl ? (
+        <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a0a] group">
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          {/* Gradient overlay at bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#1a1a1a] to-transparent" />
+
+          {/* Brand badge over image */}
+          <div className={`absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider rounded-md bg-gradient-to-r ${brandColors[product.brand]} text-white shadow-lg backdrop-blur-sm`}>
+            {product.brand}
           </div>
-          
-          {/* Discount badge */}
+
+          {/* Discount badge over image */}
           {product.hasDiscount && product.discount && (
-            <div className="flex-shrink-0 px-2 py-1 bg-green-600 text-white text-sm font-bold rounded animate-pulse-green">
+            <div className="absolute top-3 right-3 px-2.5 py-1 bg-green-600 text-white text-sm font-bold rounded-md shadow-lg animate-pulse-green">
               -{product.discount}%
             </div>
           )}
         </div>
+      ) : (
+        /* Header with brand and badges (only if no image) */
+        <div className="p-4 border-b border-[#2a2a2a]">
+          <div className="flex items-start justify-between gap-4">
+            <div className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded bg-gradient-to-r ${brandColors[product.brand]} text-white`}>
+              {product.brand}
+            </div>
+
+            {/* Discount badge */}
+            {product.hasDiscount && product.discount && (
+              <div className="flex-shrink-0 px-2 py-1 bg-green-600 text-white text-sm font-bold rounded animate-pulse-green">
+                -{product.discount}%
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Product name section */}
+      <div className="p-4 border-b border-[#2a2a2a]">
+        <h3 className="font-medium text-white line-clamp-2" title={product.name}>
+          {product.name}
+        </h3>
       </div>
-      
+
       {/* Price section */}
       <div className="p-4 border-b border-[#2a2a2a]">
-        <div className="flex items-baseline gap-3">
+        <div className="flex items-baseline gap-3 flex-wrap">
           <span className="text-2xl font-bold text-white">
-            {product.currentPrice.toFixed(2)}
+            €{product.currentPrice.toFixed(2)}
           </span>
           {product.oldPrice && (
             <span className="text-lg text-gray-500 line-through">
-              {product.oldPrice.toFixed(2)}
+              €{product.oldPrice.toFixed(2)}
             </span>
           )}
           {product.originalPrice && (
             <span className="text-lg text-gray-700 line-through">
-              {product.originalPrice.toFixed(2)}
+              €{product.originalPrice.toFixed(2)}
             </span>
           )}
         </div>
       </div>
-      
+
       {/* Sizes section */}
       <div className="p-4 border-b border-[#2a2a2a]">
         <div className="flex items-center justify-between mb-2">
@@ -116,36 +140,39 @@ export default function ProductCard({ product, onDelete, onRefresh }: ProductCar
             {product.totalSizesCount ?? product.sizes.length} available
           </span>
         </div>
-        
-        {product.sizes.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {product.sizes.map((size, index) => (
-              <SizeBadge key={`${size.size}-${index}`} size={size} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500">No size information</p>
-        )}
-        
-        {/* Stock alerts */}
-        {product.isOutOfStock && (
-          <div className="mt-3 p-2 bg-red-900/30 border border-red-800 rounded text-red-400 text-xs">
-            All sizes sold out
-          </div>
-        )}
-        {product.hasLowStock && !product.isOutOfStock && (
-          <div className="mt-3 p-2 bg-yellow-900/30 border border-yellow-800 rounded text-yellow-400 text-xs">
-            Low stock on some sizes
-          </div>
-        )}
+
+        <div className="flex items-center justify-between gap-3">
+          {/* Size badges */}
+          {product.sizes.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 flex-1">
+              {product.sizes.map((size, index) => (
+                <SizeBadge key={`${size.size}-${index}`} size={size} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 flex-1">No size information</p>
+          )}
+
+          {/* Stock alerts */}
+          {product.isOutOfStock && (
+            <div className="px-2 py-1 bg-red-900/30 border border-red-800 rounded text-red-400 text-xs font-medium whitespace-nowrap">
+              Sold Out
+            </div>
+          )}
+          {product.hasLowStock && !product.isOutOfStock && (
+            <div className="px-2 py-1 bg-yellow-900/30 border border-yellow-800 rounded text-yellow-400 text-xs font-medium whitespace-nowrap">
+              Low stock
+            </div>
+          )}
+        </div>
       </div>
-      
+
       {/* Footer */}
       <div className="p-4 flex items-center justify-between">
         <div className="text-xs text-gray-500">
           Updated {formatDate(product.lastChecked)}
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* Refresh button */}
           {onRefresh && (
@@ -159,7 +186,7 @@ export default function ProductCard({ product, onDelete, onRefresh }: ProductCar
               </svg>
             </button>
           )}
-          
+
           {/* View on site button */}
           <a
             href={product.url}
@@ -172,7 +199,7 @@ export default function ProductCard({ product, onDelete, onRefresh }: ProductCar
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
           </a>
-          
+
           {/* Delete button */}
           {onDelete && (
             <button
