@@ -1,0 +1,122 @@
+// ============================================
+// Prisma Schema for Inditex Tracker
+// 
+// This schema is prepared for future use with PostgreSQL
+// Currently the app uses JSON file storage for local testing
+// 
+// To use this schema:
+// 1. Set DATABASE_URL in .env
+// 2. Run: npx prisma migrate dev
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Product - Main tracked product
+// ============================================
+model Product {
+  id           String   @id @default(cuid())
+  brand        String   // 'zara', 'bershka', 'pullandbear', 'massimodutti'
+  name         String
+  currentPrice Float
+  oldPrice     Float?
+  discount     Int?     // percentage (e.g., 20 for 20%)
+  url          String   @unique
+  imageUrl     String?
+  lastChecked  DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  sizes        ProductSize[]
+  priceHistory PriceHistory[]
+  stockHistory StockStatus[]
+
+  @@index([brand])
+  @@index([lastChecked])
+}
+
+// ============================================
+// ProductSize - Current size availability
+// ============================================
+model ProductSize {
+  id        String  @id @default(cuid())
+  productId String
+  size      String
+  available Boolean @default(true)
+  lowStock  Boolean @default(false)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, size])
+  @@index([productId])
+}
+
+// ============================================
+// PriceHistory - Historical price records
+// ============================================
+model PriceHistory {
+  id        String   @id @default(cuid())
+  productId String
+  price     Float
+  timestamp DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([timestamp])
+}
+
+// ============================================
+// StockStatus - Historical stock snapshots
+// ============================================
+model StockStatus {
+  id        String   @id @default(cuid())
+  productId String
+  timestamp DateTime @default(now())
+
+  product Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sizes   StockStatusSize[]
+
+  @@index([productId])
+  @@index([timestamp])
+}
+
+// ============================================
+// StockStatusSize - Size data within a stock snapshot
+// ============================================
+model StockStatusSize {
+  id            String  @id @default(cuid())
+  stockStatusId String
+  size          String
+  available     Boolean
+  lowStock      Boolean @default(false)
+
+  stockStatus StockStatus @relation(fields: [stockStatusId], references: [id], onDelete: Cascade)
+
+  @@index([stockStatusId])
+}
+
+// ============================================
+// Alert - User alerts for price/stock changes
+// (Future feature)
+// ============================================
+model Alert {
+  id        String   @id @default(cuid())
+  productId String
+  type      String   // 'price_drop', 'stock_available', 'low_stock'
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([read])
+  @@index([createdAt])
+}

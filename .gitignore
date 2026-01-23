@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Inditex Tracker - Local data
+/data/products.json
+/data/price-history.json
+/data/stock-status.json
+/data/sessions/*.json
+/data/debug-*.html
+
+# Keep data directory structure
+!/data/.gitkeep
+!/data/sessions/.gitkeep
