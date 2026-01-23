@@ -178,7 +178,7 @@ export default function ProductCard({ product, onDelete, onRefresh }: ProductCar
           {onRefresh && (
             <button
               onClick={() => onRefresh(product.id)}
-              className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2a2a] rounded-lg transition-colors"
+              className="p-2 text-gray-400 hover:text-white hover:bg-[#2a2a2a] rounded-lg transition-colors cursor-pointer"
               title="Refresh product"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,7 +204,7 @@ export default function ProductCard({ product, onDelete, onRefresh }: ProductCar
           {onDelete && (
             <button
               onClick={() => onDelete(product.id)}
-              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-colors"
+              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-colors cursor-pointer"
               title="Remove from tracking"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -70,16 +70,11 @@ export default function AddProductForm({ onProductAdded }: AddProductFormProps) 
             className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors"
             disabled={isLoading}
           />
-          {isLoading && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="spinner"></div>
-            </div>
-          )}
         </div>
         <button
           type="submit"
           disabled={isLoading}
-          className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="cursor-pointer px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <>
