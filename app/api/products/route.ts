@@ -16,14 +16,12 @@ export const dynamic = 'force-dynamic';
  * Query params:
  *   - id: get single product
  *   - history: include price/stock history
- *   - all: if true, return all products; otherwise only unassigned (not in any folder)
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const includeHistory = searchParams.get('history') === 'true';
     const productId = searchParams.get('id');
-    const showAll = searchParams.get('all') === 'true';
 
     // Single product
     if (productId) {
@@ -45,8 +43,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(response);
     }
 
-    // All products (unassigned only by default, or all if ?all=true)
-    const products = await getProducts({ unassignedOnly: !showAll });
+    // All products
+    const products = await getProducts();
 
     // Enrich with computed fields
     const enrichedProducts = products.map(product => {
