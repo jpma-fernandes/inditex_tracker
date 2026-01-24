@@ -5,7 +5,7 @@ A personal tool to track prices and stock availability for Inditex group stores 
 ## ✅ Completed Features
 
 ### Core
-- [ ] **Enable adding products inside folders**
+- [x] **Enable adding products inside folders**
 
 ### Frontend / UI
 

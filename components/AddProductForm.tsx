@@ -14,7 +14,7 @@ export default function AddProductForm({ onProductAdded }: AddProductFormProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!url.trim()) {
       setError('Please enter a URL');
       return;
@@ -46,10 +46,10 @@ export default function AddProductForm({ onProductAdded }: AddProductFormProps) 
       setSuccess(`Added: ${data.product?.name || 'Product'}`);
       setUrl('');
       onProductAdded?.();
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
-      
+
     } catch (err) {
       setError('Network error. Please try again.');
       console.error(err);
@@ -91,19 +91,19 @@ export default function AddProductForm({ onProductAdded }: AddProductFormProps) 
           )}
         </button>
       </div>
-      
+
       {error && (
         <div className="mt-3 p-3 bg-red-900/30 border border-red-800 rounded-lg text-red-400 text-sm animate-slide-up">
           {error}
         </div>
       )}
-      
+
       {success && (
         <div className="mt-3 p-3 bg-green-900/30 border border-green-800 rounded-lg text-green-400 text-sm animate-slide-up">
           {success}
         </div>
       )}
-      
+
       <p className="mt-2 text-xs text-gray-500">
         Supported: Zara (Bershka, Pull&Bear, Massimo Dutti coming soon)
       </p>
