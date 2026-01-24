@@ -6,49 +6,54 @@
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getProducts, getProductById, deleteProduct, getPriceHistory, getLatestStockStatus } from '@/lib/storage';
+import { getProducts, getProductById, deleteProduct, getPriceHistory, getLatestStockSnapshot } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/products
  * Returns all tracked products with optional details
+ * Query params:
+ *   - id: get single product
+ *   - history: include price/stock history
+ *   - all: if true, return all products; otherwise only unassigned (not in any folder)
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const includeHistory = searchParams.get('history') === 'true';
     const productId = searchParams.get('id');
-    
+    const showAll = searchParams.get('all') === 'true';
+
     // Single product
     if (productId) {
-      const product = getProductById(productId);
+      const product = await getProductById(productId);
       if (!product) {
         return NextResponse.json(
           { error: 'Product not found' },
           { status: 404 }
         );
       }
-      
+
       const response: Record<string, unknown> = { product };
-      
+
       if (includeHistory) {
-        response.priceHistory = getPriceHistory(productId);
-        response.latestStock = getLatestStockStatus(productId);
+        response.priceHistory = await getPriceHistory(productId);
+        response.latestStock = await getLatestStockSnapshot(productId);
       }
-      
+
       return NextResponse.json(response);
     }
-    
-    // All products
-    const products = getProducts();
-    
+
+    // All products (unassigned only by default, or all if ?all=true)
+    const products = await getProducts({ unassignedOnly: !showAll });
+
     // Enrich with computed fields
     const enrichedProducts = products.map(product => {
       const hasDiscount = product.oldPrice !== null && product.discount !== null;
       const availableSizes = product.sizes.filter(s => s.available);
       const hasLowStock = product.sizes.some(s => s.lowStock);
-      
+
       return {
         ...product,
         hasDiscount,
@@ -59,12 +64,12 @@ export async function GET(request: NextRequest) {
         isOutOfStock: availableSizes.length === 0,
       };
     });
-    
+
     return NextResponse.json({
       products: enrichedProducts,
       count: products.length,
     });
-    
+
   } catch (error) {
     console.error('[API] GET /api/products error:', error);
     return NextResponse.json(
@@ -82,29 +87,29 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('id');
-    
+
     if (!productId) {
       return NextResponse.json(
         { error: 'Product ID is required' },
         { status: 400 }
       );
     }
-    
-    const product = getProductById(productId);
+
+    const product = await getProductById(productId);
     if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
-    
-    deleteProduct(productId);
-    
+
+    await deleteProduct(productId);
+
     return NextResponse.json({
       success: true,
       message: `Product "${product.name}" removed from tracking`,
     });
-    
+
   } catch (error) {
     console.error('[API] DELETE /api/products error:', error);
     return NextResponse.json(

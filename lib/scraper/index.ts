@@ -163,12 +163,12 @@ export async function scrapeProduct(
     // Save to storage if requested
     let savedProduct: Product | undefined;
     if (saveToStorage) {
-      const existingProduct = getProductByUrl(url);
+      const existingProduct = await getProductByUrl(url);
       if (existingProduct) {
-        savedProduct = updateProduct(existingProduct.id, fullProduct);
+        savedProduct = await updateProduct(existingProduct.id, fullProduct);
         log('SCRAPER', `Updated existing product: ${savedProduct.id}`);
       } else {
-        savedProduct = addProduct(fullProduct);
+        savedProduct = await addProduct(fullProduct);
         log('SCRAPER', `Added new product: ${savedProduct.id}`);
       }
     }
@@ -248,14 +248,14 @@ export async function scrapeProducts(
  */
 export async function refreshAllProducts(): Promise<ScraperResult[]> {
   const { getProducts } = await import('@/lib/storage');
-  const products = getProducts();
+  const products = await getProducts();
 
   if (products.length === 0) {
     log('SCRAPER', 'No products to refresh');
     return [];
   }
 
-  const urls = products.map(p => p.url);
+  const urls = products.map((p: Product) => p.url);
   return scrapeProducts(urls);
 }
 

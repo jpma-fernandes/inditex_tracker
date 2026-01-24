@@ -39,9 +39,24 @@ model Product {
   sizes        ProductSize[]
   priceHistory PriceHistory[]
   stockHistory StockSnapshot[]
+  folders      Folder[]        // Many-to-many with folders
 
   @@index([brand])
   @@index([lastChecked])
+}
+
+// ============================================
+// Folder - User-created folders to organize products
+// ============================================
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[] // Many-to-many with products
+
+  @@index([name])
 }
 
 // ============================================

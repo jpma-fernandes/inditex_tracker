@@ -12,6 +12,7 @@ interface ProductCardProps {
   };
   onDelete?: (id: string) => void;
   onRefresh?: (id: string) => void;
+  onAddToFolder?: (id: string, name: string) => void;
 }
 
 function SizeBadge({ size }: { size: SizeStock }) {
@@ -40,7 +41,7 @@ function SizeBadge({ size }: { size: SizeStock }) {
   );
 }
 
-export default function ProductCard({ product, onDelete, onRefresh }: ProductCardProps) {
+export default function ProductCard({ product, onDelete, onRefresh, onAddToFolder }: ProductCardProps) {
   const brandColors: Record<string, string> = {
     zara: 'from-gray-600 to-gray-800',
     bershka: 'from-orange-600 to-orange-800',
@@ -183,6 +184,19 @@ export default function ProductCard({ product, onDelete, onRefresh }: ProductCar
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          )}
+
+          {/* Add to folder button */}
+          {onAddToFolder && (
+            <button
+              onClick={() => onAddToFolder(product.id, product.name)}
+              className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-900/30 rounded-lg transition-colors cursor-pointer"
+              title="Add to folder"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
               </svg>
             </button>
           )}
