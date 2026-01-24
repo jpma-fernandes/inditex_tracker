@@ -36,6 +36,7 @@ export default function AddToFolderModal({
     onSuccess,
 }: AddToFolderModalProps) {
     const [folders, setFolders] = useState<Folder[]>([]);
+    const [existingFolderIds, setExistingFolderIds] = useState<Set<string>>(new Set());
     const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -55,10 +56,24 @@ export default function AddToFolderModal({
     const fetchFolders = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch('/api/folders');
-            const data = await res.json();
-            if (res.ok) {
-                setFolders(data.folders || []);
+            // Fetch all folders and product's existing folders in parallel
+            const [foldersRes, existingRes] = await Promise.all([
+                fetch('/api/folders'),
+                fetch(`/api/products/${productId}/folders`),
+            ]);
+
+            const [foldersData, existingData] = await Promise.all([
+                foldersRes.json(),
+                existingRes.json(),
+            ]);
+
+            if (foldersRes.ok) {
+                setFolders(foldersData.folders || []);
+            }
+
+            if (existingRes.ok) {
+                const existingIds = new Set<string>((existingData.folders || []).map((f: Folder) => f.id));
+                setExistingFolderIds(existingIds);
             }
         } catch (err) {
             console.error('Failed to fetch folders', err);
@@ -68,6 +83,9 @@ export default function AddToFolderModal({
     };
 
     const toggleFolder = (folderId: string) => {
+        // Don't allow toggling existing folders
+        if (existingFolderIds.has(folderId)) return;
+
         setSelectedFolders(prev => {
             const next = new Set(prev);
             if (next.has(folderId)) {
@@ -156,21 +174,28 @@ export default function AddToFolderModal({
                                 No folders yet. Create one below.
                             </div>
                         ) : (
-                            folders.map(folder => (
-                                <label
-                                    key={folder.id}
-                                    className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-accent"
-                                >
-                                    <Checkbox
-                                        checked={selectedFolders.has(folder.id)}
-                                        onCheckedChange={() => toggleFolder(folder.id)}
-                                    />
-                                    <span className="flex-1">{folder.name}</span>
-                                    <span className="text-sm text-muted-foreground">
-                                        {folder.productCount || 0}
-                                    </span>
-                                </label>
-                            ))
+                            folders.map(folder => {
+                                const isExisting = existingFolderIds.has(folder.id);
+                                return (
+                                    <label
+                                        key={folder.id}
+                                        className={`flex items-center gap-3 rounded-lg border p-3 transition-colors ${isExisting
+                                            ? 'opacity-50 cursor-not-allowed bg-muted'
+                                            : 'cursor-pointer hover:bg-accent'
+                                            }`}
+                                    >
+                                        <Checkbox
+                                            checked={isExisting || selectedFolders.has(folder.id)}
+                                            onCheckedChange={() => toggleFolder(folder.id)}
+                                            disabled={isExisting}
+                                        />
+                                        <span className="flex-1">{folder.name}</span>
+                                        <span className="text-sm text-muted-foreground">
+                                            {folder.productCount || 0}
+                                        </span>
+                                    </label>
+                                );
+                            })
                         )}
                     </div>
 
