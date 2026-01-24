@@ -91,7 +91,7 @@ export default function FolderSidebar({ onFolderCreated }: FolderSidebarProps) {
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 cursor-pointer">
                     <Folder className="h-4 w-4" />
                     <span>Folders</span>
                     <span className="text-muted-foreground">({folders.length})</span>
@@ -114,7 +114,7 @@ export default function FolderSidebar({ onFolderCreated }: FolderSidebarProps) {
                             <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-8 w-8 cursor-pointer"
                                 onClick={handleCreateFolder}
                                 disabled={isCreating || !newFolderName.trim()}
                             >
@@ -123,7 +123,7 @@ export default function FolderSidebar({ onFolderCreated }: FolderSidebarProps) {
                             <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-8 w-8 cursor-pointer"
                                 onClick={() => {
                                     setShowNewInput(false);
                                     setNewFolderName('');
@@ -136,7 +136,7 @@ export default function FolderSidebar({ onFolderCreated }: FolderSidebarProps) {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="w-full justify-start gap-2"
+                            className="w-full justify-start gap-2 cursor-pointer"
                             onClick={() => setShowNewInput(true)}
                         >
                             <FolderPlus className="h-4 w-4" />
@@ -174,7 +174,7 @@ export default function FolderSidebar({ onFolderCreated }: FolderSidebarProps) {
                                     <Button
                                         size="icon"
                                         variant="ghost"
-                                        className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                                        className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
                                         onClick={(e) => handleDeleteFolder(e, folder.id, folder.name)}
                                     >
                                         <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
@@ -183,19 +183,6 @@ export default function FolderSidebar({ onFolderCreated }: FolderSidebarProps) {
                             );
                         })
                     )}
-                </div>
-
-                {/* Home link */}
-                <div className="border-t p-2">
-                    <Link
-                        href="/"
-                        className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent ${pathname === '/' ? 'bg-accent' : ''
-                            }`}
-                        onClick={() => setIsOpen(false)}
-                    >
-                        <Home className={`h-4 w-4 ${pathname === '/' ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <span>All Unassigned</span>
-                    </Link>
                 </div>
             </PopoverContent>
         </Popover>
