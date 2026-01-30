@@ -1,19 +1,16 @@
-// Seed script for dummy_tracker with 10 fake products
-// Generates 6 months of price history (360 points) at 12-hour cadence
-// and correlated stock history snapshots.
+// Seed script for dummy_tracker with hardcoded fake products
+// Simple script with placeholder data - adjust values as needed
 
 import prisma, { databaseUrl } from '../lib/db/prisma';
 
 // Assure DB is the dummy one
 if (databaseUrl !== process.env.DUMMY_DATABASE_URL) {
   console.error('[seed-dummy.ts] This script can only be run against the DUMMY database.');
-  console.error('[seed-dummy.ts] Prisma is pointing to:', databaseUrl);
-  console.error('[seed-dummy.ts] Expected: DUMMY_DATABASE_URL');
   console.error('[seed-dummy.ts] Set USE_DUMMY_DB=true before running this script.');
   process.exit(1);
 }
 
-console.log('[seed-dummy.ts] Populating DUMMY database with fake products and history...');
+console.log('[seed-dummy.ts] Populating DUMMY database with fake products...');
 
 // Clean existing data first
 async function cleanDatabase() {
@@ -22,145 +19,271 @@ async function cleanDatabase() {
   await prisma.priceHistory.deleteMany({});
   await prisma.productSize.deleteMany({});
   await prisma.product.deleteMany({});
-  await prisma.folder.deleteMany({});
   console.log('[seed-dummy.ts] Database cleaned.');
 }
 
-type SizeLabel = string;
+// ============================================
+// HARDCODED DATA - Edit these as needed
+// ============================================
 
-type ProductSeed = {
-  brand: string;
-  name: string;
-  originalPrice: number;
-  sizes: SizeLabel[];
-};
+const PRODUCTS = [
+  {
+    brand: 'zara',
+    name: 'Calças Wide Leg Cintura Alta',
+    url: 'https://www.zara.com/dummy-product-1',
+    imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
+    currentPrice: 39.95,
+    originalPrice: 49.95,
+    discount: 20,
+    sizes: [
+      { size: '34', available: true },
+      { size: '36', available: true },
+      { size: '38', available: false },
+      { size: '40', available: true },
+      { size: '42', available: false },
+    ],
+    priceHistory: [
+      { price: 49.95, daysAgo: 30 },
+      { price: 49.95, daysAgo: 20 },
+      { price: 39.95, daysAgo: 10 },
+      { price: 39.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'zara',
+    name: 'Jeans Slim Fit',
+    url: 'https://www.zara.com/dummy-product-2',
+    imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
+    currentPrice: 39.95,
+    originalPrice: 39.95,
+    discount: null,
+    sizes: [
+      { size: '36', available: true },
+      { size: '38', available: true },
+      { size: '40', available: true },
+      { size: '42', available: true },
+    ],
+    priceHistory: [
+      { price: 39.95, daysAgo: 30 },
+      { price: 39.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'bershka',
+    name: 'Calças Cargo Ripstop',
+    url: 'https://www.bershka.com/dummy-product-3',
+    imageUrl: 'https://via.placeholder.com/400x600?text=BERSHKA',
+    currentPrice: 29.95,
+    originalPrice: 45.95,
+    discount: 35,
+    sizes: [
+      { size: 'S', available: false },
+      { size: 'M', available: true },
+      { size: 'L', available: true },
+      { size: 'XL', available: false },
+    ],
+    priceHistory: [
+      { price: 45.95, daysAgo: 60 },
+      { price: 45.95, daysAgo: 30 },
+      { price: 35.95, daysAgo: 15 },
+      { price: 29.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'pullandbear',
+    name: 'Blazer Oversize Estruturado',
+    url: 'https://www.pullandbear.com/dummy-product-4',
+    imageUrl: 'https://via.placeholder.com/400x600?text=PULL%26BEAR',
+    currentPrice: 89.95,
+    originalPrice: 89.95,
+    discount: null,
+    sizes: [
+      { size: 'XS', available: true },
+      { size: 'S', available: true },
+      { size: 'M', available: true },
+      { size: 'L', available: true },
+      { size: 'XL', available: true },
+    ],
+    priceHistory: [
+      { price: 89.95, daysAgo: 30 },
+      { price: 89.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'massimodutti',
+    name: 'Casaco Acolchoado Capuz',
+    url: 'https://www.massimodutti.com/dummy-product-5',
+    imageUrl: 'https://via.placeholder.com/400x600?text=MASSIMO',
+    currentPrice: 59.95,
+    originalPrice: 79.95,
+    discount: 25,
+    sizes: [
+      { size: 'S', available: true },
+      { size: 'M', available: false },
+      { size: 'L', available: false },
+      { size: 'XL', available: true },
+    ],
+    priceHistory: [
+      { price: 79.95, daysAgo: 45 },
+      { price: 79.95, daysAgo: 20 },
+      { price: 59.95, daysAgo: 5 },
+      { price: 59.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'massimodutti',
+    name: 'Trench Coat Clássico',
+    url: 'https://www.massimodutti.com/dummy-product-6',
+    imageUrl: 'https://via.placeholder.com/400x600?text=MASSIMO',
+    currentPrice: 119.95,
+    originalPrice: 119.95,
+    discount: null,
+    sizes: [
+      { size: 'XS', available: true },
+      { size: 'S', available: true },
+      { size: 'M', available: true },
+      { size: 'L', available: true },
+    ],
+    priceHistory: [
+      { price: 119.95, daysAgo: 30 },
+      { price: 119.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'bershka',
+    name: 'Blusão Bomber Nylon',
+    url: 'https://www.bershka.com/dummy-product-7',
+    imageUrl: 'https://via.placeholder.com/400x600?text=BERSHKA',
+    currentPrice: 49.95,
+    originalPrice: 69.95,
+    discount: 29,
+    sizes: [
+      { size: 'S', available: true },
+      { size: 'M', available: true },
+      { size: 'L', available: false },
+      { size: 'XL', available: true },
+    ],
+    priceHistory: [
+      { price: 69.95, daysAgo: 40 },
+      { price: 55.95, daysAgo: 20 },
+      { price: 49.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'zara',
+    name: 'Botins Tacão Bloco',
+    url: 'https://www.zara.com/dummy-product-8',
+    imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
+    currentPrice: 59.95,
+    originalPrice: 59.95,
+    discount: null,
+    sizes: [
+      { size: '36', available: true },
+      { size: '37', available: true },
+      { size: '38', available: true },
+      { size: '39', available: true },
+      { size: '40', available: true },
+    ],
+    priceHistory: [
+      { price: 59.95, daysAgo: 30 },
+      { price: 59.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'zara',
+    name: 'Ténis Plataforma',
+    url: 'https://www.zara.com/dummy-product-9',
+    imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
+    currentPrice: 35.95,
+    originalPrice: 49.95,
+    discount: 28,
+    sizes: [
+      { size: '36', available: false },
+      { size: '37', available: true },
+      { size: '38', available: true },
+      { size: '39', available: false },
+      { size: '40', available: true },
+    ],
+    priceHistory: [
+      { price: 49.95, daysAgo: 50 },
+      { price: 42.95, daysAgo: 25 },
+      { price: 35.95, daysAgo: 10 },
+      { price: 35.95, daysAgo: 0 },
+    ],
+  },
+  {
+    brand: 'zara',
+    name: 'Mocassins Pele',
+    url: 'https://www.zara.com/dummy-product-10',
+    imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
+    currentPrice: 69.95,
+    originalPrice: 69.95,
+    discount: null,
+    sizes: [
+      { size: '36', available: true },
+      { size: '37', available: true },
+      { size: '38', available: true },
+      { size: '39', available: true },
+      { size: '40', available: true },
+      { size: '41', available: true },
+    ],
+    priceHistory: [
+      { price: 69.95, daysAgo: 30 },
+      { price: 69.95, daysAgo: 0 },
+    ],
+  },
+];
 
-// Simple deterministic RNG for reproducibility
-function createRng(seed: number) {
-  let s = seed | 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) % 4294967296;
-    return (s >>> 0) / 4294967296;
-  };
-}
+// ============================================
+// SEED FUNCTION
+// ============================================
 
 async function main() {
-  // Clean database first
   await cleanDatabase();
 
-  // 1) Define 10 fake products (Calças, Casacos, Sapatos)
-  const seeds: ProductSeed[] = [
-    { brand: 'zara', name: 'Calças Wide Leg Cintura Alta', originalPrice: 49.95, sizes: ['34','36','38','40','42','44'] },
-    { brand: 'zara', name: 'Jeans Slim Fit', originalPrice: 39.95, sizes: ['36','38','40','42','44'] },
-    { brand: 'bershka', name: 'Calças Cargo Ripstop', originalPrice: 45.95, sizes: ['34','36','38','40','42'] },
-    { brand: 'pullandbear', name: 'Blazer Oversize Estruturado', originalPrice: 89.95, sizes: ['XS','S','M','L','XL'] },
-    { brand: 'massimodutti', name: 'Casaco Acolchoado Capuz', originalPrice: 79.95, sizes: ['S','M','L','XL'] },
-    { brand: 'massimodutti', name: 'Trench Coat Clássico', originalPrice: 119.95, sizes: ['XS','S','M','L','XL'] },
-    { brand: 'bershka', name: 'Blusão Bomber Nylon', originalPrice: 69.95, sizes: ['S','M','L','XL'] },
-    { brand: 'zara', name: 'Botins Tacão Bloco', originalPrice: 59.95, sizes: ['35','36','37','38','39','40'] },
-    { brand: 'zara', name: 'Ténis Plataforma', originalPrice: 49.95, sizes: ['36','37','38','39','40'] },
-    { brand: 'zara', name: 'Mocassins Pele', originalPrice: 69.95, sizes: ['35','36','37','38','39','40','41'] },
-  ];
+  const now = new Date();
 
-  // 2) Seed each product and generate 360 price/stock snapshots
-  const startDate = new Date();
-  // go back 6 months (approx)
-  const sixMonthsMs = 1000 * 60 * 60 * 24 * 30 * 6;
-  const baseDate = new Date(startDate.getTime() - sixMonthsMs);
-  const stepMs = 1000 * 60 * 60 * 12; // 12 hours
-  const steps = Math.floor((startDate.getTime() - baseDate.getTime()) / stepMs);
-
-  for (let idx = 0; idx < seeds.length; idx++) {
-    const s = seeds[idx];
-    // Generate unique dummy URL for each product
-    const dummyUrl = `https://www.${s.brand}.com/dummy-product-${idx + 1}`;
-    // create product with initial data
+  // Create products
+  console.log('[seed-dummy.ts] Creating products...');
+  for (const product of PRODUCTS) {
     const created = await prisma.product.create({
       data: {
-        brand: s.brand,
-        name: s.name,
-        currentPrice: s.originalPrice,
-        //originalPrice: s.originalPrice,
-        url: dummyUrl,
-        imageUrl: `https://via.placeholder.com/400x600?text=${s.brand.toUpperCase()}`,
-        lastChecked: new Date(),
+        brand: product.brand,
+        name: product.name,
+        url: product.url,
+        imageUrl: product.imageUrl,
+        currentPrice: product.currentPrice,
+        oldPrice: product.discount ? product.originalPrice : null,
+        discount: product.discount,
+        lastChecked: now,
         sizes: {
-          create: s.sizes.map(sz => ({ size: sz, available: true })),
+          create: product.sizes.map(s => ({
+            size: s.size,
+            available: s.available,
+          })),
         },
         priceHistory: {
-          create: {
-            price: s.originalPrice,
-            timestamp: baseDate,
-          },
+          create: product.priceHistory.map(ph => ({
+            price: ph.price,
+            timestamp: new Date(now.getTime() - ph.daysAgo * 24 * 60 * 60 * 1000),
+          })),
         },
       },
     });
 
-    // seed initial stock snapshot for the base state
+    // Create a stock snapshot for current state
     await prisma.stockSnapshot.create({
       data: {
         productId: created.id,
-        timestamp: baseDate,
-        sizes: s.sizes.map(sz => ({ size: sz, available: true })),
+        timestamp: now,
+        sizes: product.sizes,
       },
     });
 
-    // Prepare discount events (1-3 per product)
-    const rng = createRng(1000 + idx * 97);
-    const nEvents = 1 + Math.floor(rng() * 2); // 1 or 2; we'll add a third if lucky
-    const events: { start: number; end: number; discount: number }[] = [];
-    for (let e = 0; e < nEvents; e++) {
-      const start = Math.floor(((e + 1) * steps) / (nEvents + 1)) + Math.floor(rng() * 20) - 10;
-      const duration = Math.floor(steps * (0.08 + rng() * 0.08)); // ~8-16% of timeline
-      const end = Math.min(steps - 1, start + duration);
-      // distribute discount tiers across events
-      const tier = e; // 0,1,2
-      const discount = tier === 0 ? 0.18 + rng() * 0.12 : tier === 1 ? 0.30 + rng() * 0.20 : 0.50 + rng() * 0.20;
-      events.push({ start: Math.max(0, start), end, discount: Math.min(discount, 0.75) });
-    }
-
-    // Generate history entries for 360 steps (6 months at 12h cadence)
-    for (let t = 0; t < steps; t++) {
-      const timestamp = new Date(baseDate.getTime() + t * stepMs);
-      // determine max discount active at this step
-      let activeDiscount = 0;
-      for (const ev of events) {
-        if (t >= ev.start && t <= ev.end) {
-          activeDiscount = Math.max(activeDiscount, ev.discount);
-        }
-      }
-      const price = parseFloat((s.originalPrice * (1 - activeDiscount)).toFixed(2));
-
-      // insert price history
-      await prisma.priceHistory.create({
-        data: {
-          productId: created.id,
-          price,
-          timestamp,
-        },
-      });
-
-      // seeded stock snapshot - correlates with discounts
-      const sizesStatus = s.sizes.map((sz, si) => {
-        const idSeed = idx * 9973 + si * 131 + t * 17;
-        const localRng = createRng(idSeed);
-        const inDiscount = activeDiscount > 0;
-        const available = inDiscount ? localRng() > 0.25 : localRng() > 0.05;
-        const lowStock = inDiscount ? localRng() > 0.6 : localRng() > 0.95;
-        return { size: sz, available, lowStock };
-      });
-
-      await prisma.stockSnapshot.create({
-        data: {
-          productId: created.id,
-          timestamp,
-          sizes: sizesStatus,
-        },
-      });
-    }
+    console.log(`  ✓ ${product.brand} - ${product.name}`);
   }
 
-  console.log('[seed-dummy.ts] Dummy seed completed. 10 products with 6 months of history generated.');
+  console.log(`[seed-dummy.ts] Done! Created ${PRODUCTS.length} products.`);
 }
 
 main()

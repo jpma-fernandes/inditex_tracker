@@ -12,7 +12,7 @@
     "scrape:visible": "tsx scripts/test-scraper.ts --visible",
     "products": "tsx scripts/test-scraper.ts --all",
     "cron": "tsx scripts/cron-local.ts",
-    "seed:dummy": "tsx scripts/seed-dummy.ts"
+    "seed:dummy": "set USE_DUMMY_DB=true&& tsx scripts/seed-dummy.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
