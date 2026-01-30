@@ -33,7 +33,7 @@ const PRODUCTS = [
     url: 'https://www.zara.com/dummy-product-1',
     imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
     currentPrice: 39.95,
-    originalPrice: 49.95,
+    oldPrice: 49.95,
     discount: 20,
     sizes: [
       { size: '34', available: true },
@@ -55,7 +55,7 @@ const PRODUCTS = [
     url: 'https://www.zara.com/dummy-product-2',
     imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
     currentPrice: 39.95,
-    originalPrice: 39.95,
+    oldPrice: 39.95,
     discount: null,
     sizes: [
       { size: '36', available: true },
@@ -74,7 +74,7 @@ const PRODUCTS = [
     url: 'https://www.bershka.com/dummy-product-3',
     imageUrl: 'https://via.placeholder.com/400x600?text=BERSHKA',
     currentPrice: 29.95,
-    originalPrice: 45.95,
+    oldPrice: 45.95,
     discount: 35,
     sizes: [
       { size: 'S', available: false },
@@ -95,7 +95,7 @@ const PRODUCTS = [
     url: 'https://www.pullandbear.com/dummy-product-4',
     imageUrl: 'https://via.placeholder.com/400x600?text=PULL%26BEAR',
     currentPrice: 89.95,
-    originalPrice: 89.95,
+    oldPrice: 89.95,
     discount: null,
     sizes: [
       { size: 'XS', available: true },
@@ -115,7 +115,7 @@ const PRODUCTS = [
     url: 'https://www.massimodutti.com/dummy-product-5',
     imageUrl: 'https://via.placeholder.com/400x600?text=MASSIMO',
     currentPrice: 59.95,
-    originalPrice: 79.95,
+    oldPrice: 79.95,
     discount: 25,
     sizes: [
       { size: 'S', available: true },
@@ -136,7 +136,7 @@ const PRODUCTS = [
     url: 'https://www.massimodutti.com/dummy-product-6',
     imageUrl: 'https://via.placeholder.com/400x600?text=MASSIMO',
     currentPrice: 119.95,
-    originalPrice: 119.95,
+    oldPrice: 119.95,
     discount: null,
     sizes: [
       { size: 'XS', available: true },
@@ -155,7 +155,7 @@ const PRODUCTS = [
     url: 'https://www.bershka.com/dummy-product-7',
     imageUrl: 'https://via.placeholder.com/400x600?text=BERSHKA',
     currentPrice: 49.95,
-    originalPrice: 69.95,
+    oldPrice: 69.95,
     discount: 29,
     sizes: [
       { size: 'S', available: true },
@@ -175,7 +175,7 @@ const PRODUCTS = [
     url: 'https://www.zara.com/dummy-product-8',
     imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
     currentPrice: 59.95,
-    originalPrice: 59.95,
+    oldPrice: 59.95,
     discount: null,
     sizes: [
       { size: '36', available: true },
@@ -195,7 +195,7 @@ const PRODUCTS = [
     url: 'https://www.zara.com/dummy-product-9',
     imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
     currentPrice: 35.95,
-    originalPrice: 49.95,
+    oldPrice: 49.95,
     discount: 28,
     sizes: [
       { size: '36', available: false },
@@ -217,7 +217,7 @@ const PRODUCTS = [
     url: 'https://www.zara.com/dummy-product-10',
     imageUrl: 'https://via.placeholder.com/400x600?text=ZARA',
     currentPrice: 69.95,
-    originalPrice: 69.95,
+    oldPrice: 69.95,
     discount: null,
     sizes: [
       { size: '36', available: true },
@@ -253,7 +253,8 @@ async function main() {
         url: product.url,
         imageUrl: product.imageUrl,
         currentPrice: product.currentPrice,
-        oldPrice: product.discount ? product.originalPrice : null,
+        oldPrice: product.discount ? product.oldPrice : null,
+        //originalPrice: product.originalPrice,
         discount: product.discount,
         lastChecked: now,
         sizes: {
