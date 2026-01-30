@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useCallback } from 'react';
 import Link from 'next/link';
 import { Folder, RefreshCw, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ProductList from '@/components/ProductList';
+import SearchInput from '@/components/SearchInput';
 
 interface FolderData {
     id: string;
@@ -21,6 +22,11 @@ export default function FolderPage({ params }: { params: Promise<{ id: string }>
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleSearch = useCallback((query: string) => {
+        setSearchQuery(query);
+    }, []);
 
     useEffect(() => {
         async function fetchFolder() {
@@ -141,10 +147,16 @@ export default function FolderPage({ params }: { params: Promise<{ id: string }>
                 </Button>
             </div>
 
+            {/* Search bar */}
+            <div className="max-w-md">
+                <SearchInput onSearch={handleSearch} placeholder="Search by product name..." />
+            </div>
+
             {/* Products in this folder */}
             <ProductList
                 refreshTrigger={refreshTrigger}
                 folderId={id}
+                searchQuery={searchQuery}
             />
         </div>
     );

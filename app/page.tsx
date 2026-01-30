@@ -1,17 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import AddProductForm from '@/components/AddProductForm';
 import ProductList from '@/components/ProductList';
 import FolderSidebar from '@/components/FolderSidebar';
+import SearchInput from '@/components/SearchInput';
 
 export default function Home() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleProductAdded = () => {
     // Trigger refresh of product list
     setRefreshTrigger(prev => prev + 1);
   };
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -47,7 +53,13 @@ export default function Home() {
             </button>
           </div>
         </div>
-        <ProductList refreshTrigger={refreshTrigger} />
+        
+        {/* Search bar */}
+        <div className="mb-6 max-w-md">
+          <SearchInput onSearch={handleSearch} placeholder="Search by product name..." />
+        </div>
+
+        <ProductList refreshTrigger={refreshTrigger} searchQuery={searchQuery} />
       </section>
     </div>
   );

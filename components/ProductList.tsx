@@ -18,6 +18,7 @@ interface EnrichedProduct extends Product {
 interface ProductListProps {
   refreshTrigger?: number;
   folderId?: string;  // If provided, fetch products from this folder
+  searchQuery?: string;  // Filter products by name
 }
 
 interface FolderItem {
@@ -26,7 +27,7 @@ interface FolderItem {
   productCount: number;
 }
 
-export default function ProductList({ refreshTrigger, folderId }: ProductListProps) {
+export default function ProductList({ refreshTrigger, folderId, searchQuery = '' }: ProductListProps) {
   const [products, setProducts] = useState<EnrichedProduct[]>([]);
   const [folders, setFolders] = useState<FolderItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -177,8 +178,15 @@ export default function ProductList({ refreshTrigger, folderId }: ProductListPro
     );
   }
 
+  // Filter products by search query (case-insensitive)
+  const filteredProducts = searchQuery
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : products;
+
   // Sort: discounted first, then by last checked
-  const sortedProducts = [...products].sort((a, b) => {
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (a.hasDiscount && !b.hasDiscount) return -1;
     if (!a.hasDiscount && b.hasDiscount) return 1;
     return new Date(b.lastChecked).getTime() - new Date(a.lastChecked).getTime();
@@ -204,21 +212,42 @@ export default function ProductList({ refreshTrigger, folderId }: ProductListPro
             {products.filter(p => p.hasLowStock).length}
           </span>
         </div>
+        {searchQuery && (
+          <div className="px-3 py-1.5 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
+            <span className="text-gray-500">Results:</span>{' '}
+            <span className="text-blue-400 font-medium">{filteredProducts.length}</span>
+          </div>
+        )}
       </div>
 
-      {/* Product grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedProducts.map(product => (
-          <div key={product.id} className={refreshingId === product.id ? 'opacity-50' : ''}>
-            <ProductCard
-              product={product}
-              onDelete={handleDelete}
-              onRefresh={refreshingId ? undefined : handleRefresh}
-              onAddToFolder={!folderId ? handleAddToFolder : undefined}
-            />
+      {/* No search results */}
+      {searchQuery && filteredProducts.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 bg-[#1a1a1a] rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
-        ))}
-      </div>
+          <h3 className="text-lg font-medium text-gray-300 mb-2">No products found</h3>
+          <p className="text-gray-500">No products match &quot;{searchQuery}&quot;</p>
+        </div>
+      )}
+
+      {/* Product grid */}
+      {sortedProducts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedProducts.map(product => (
+            <div key={product.id} className={refreshingId === product.id ? 'opacity-50' : ''}>
+              <ProductCard
+                product={product}
+                onDelete={handleDelete}
+                onRefresh={refreshingId ? undefined : handleRefresh}
+                onAddToFolder={!folderId ? handleAddToFolder : undefined}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Add to Folder Modal */}
       {folderModal && (
