@@ -10,7 +10,7 @@ const globalForPrisma = globalThis as unknown as {
 
 // Choose database URL based on USE_DUMMY_DB flag
 const useDummyDb = process.env.USE_DUMMY_DB === 'true';
-const databaseUrl = useDummyDb
+export const databaseUrl = useDummyDb
     ? process.env.DUMMY_DATABASE_URL
     : process.env.DATABASE_URL;
 

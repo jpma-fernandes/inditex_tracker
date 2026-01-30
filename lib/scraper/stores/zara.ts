@@ -40,7 +40,7 @@ const SELECTORS = {
   //Original price when there are 3 prices
   originalPrice: [
     '.price-original__amount',
-    '.price__amount',
+    //'.price__amount',
     '[data-qa="product-amount-original"]',
     '.price__amount-original',
   ],
