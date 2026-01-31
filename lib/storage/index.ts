@@ -1,2 +1,2 @@
-// Re-export all storage functions from PostgreSQL implementation
-export * from './db-store';
+// Re-export all storage functions from organized database modules
+export * from './db';

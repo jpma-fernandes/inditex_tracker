@@ -1,5 +1,5 @@
 // ============================================
-// JSON File Storage Implementation
+// JSON File Storage Implementation THIS IS DEPRACATED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // ============================================
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
