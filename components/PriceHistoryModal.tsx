@@ -100,6 +100,9 @@ export default function PriceHistoryModal({
     ? ((priceChange / prices[0]) * 100).toFixed(1) 
     : '0';
 
+  // Check if price has varied
+  const hasPriceVaried = prices.length > 1 && prices.some((p) => p !== prices[0]);
+
   // Custom tooltip component
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -146,6 +149,40 @@ export default function PriceHistoryModal({
             </svg>
             <p>No price history available yet</p>
             <p className="text-sm text-gray-500 mt-1">Price changes will appear here</p>
+          </div>
+        ) : !hasPriceVaried ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="bg-gradient-to-br from-[#1a1a1a] to-[#252525] border border-[#333] rounded-2xl p-8 mb-6 shadow-2xl shadow-green-500/5">
+              <div className="bg-green-500/10 rounded-full p-5 mb-5 ring-2 ring-green-500/20 ring-offset-2 ring-offset-[#0a0a0a]">
+                <svg className="w-16 h-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="text-4xl font-bold text-white mb-2 tracking-tight">€{currentPrice?.toFixed(2)}</p>
+              <div className="flex items-center justify-center gap-2 text-green-400 text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Stable Price</span>
+              </div>
+            </div>
+            
+            <h3 className="text-white font-semibold text-xl mb-3">Price Hasn't Changed</h3>
+            <p className="text-gray-400 text-base max-w-md mb-6 leading-relaxed">
+              This product has maintained the same price since we started tracking it on{' '}
+              <span className="text-gray-200 font-semibold">
+                {new Date(priceHistory[0]?.timestamp).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </span>
+            </p>
+            
+            <div className="flex items-center gap-3 text-sm text-gray-500 bg-[#1a1a1a]/50 border border-[#2a2a2a] rounded-full px-5 py-3">
+              <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+              <span className="font-medium">{priceHistory.length} price checks recorded</span>
+            </div>
           </div>
         ) : (
           <>
@@ -213,7 +250,10 @@ export default function PriceHistoryModal({
 
             {/* Footer info */}
             <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
-              <span>{priceHistory.length} price {priceHistory.length === 1 ? 'record' : 'records'}</span>
+                <div className="flex items-center gap-3 text-sm text-gray-500 bg-[#1a1a1a]/50 border border-[#2a2a2a] rounded-full px-5 py-3">
+                    <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                    <span className="font-medium">{priceHistory.length} price checks recorded</span>
+                </div>
               <span>
                 Tracking since {new Date(priceHistory[0]?.timestamp).toLocaleDateString('en-US', {
                   month: 'short',
