@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Product } from '@/types';
 import ProductCard from './ProductCard';
 import AddToFolderModal from './AddToFolderModal';
+import PriceHistoryModal from './PriceHistoryModal';
 import FolderGrid from './FolderGrid';
 
 interface EnrichedProduct extends Product {
@@ -34,9 +35,14 @@ export default function ProductList({ refreshTrigger, folderId, searchQuery = ''
   const [error, setError] = useState<string | null>(null);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [folderModal, setFolderModal] = useState<{ productId: string; productName: string } | null>(null);
+  const [priceHistoryModal, setPriceHistoryModal] = useState<{ productId: string; productName: string } | null>(null);
 
   const handleAddToFolder = (productId: string, productName: string) => {
     setFolderModal({ productId, productName });
+  };
+
+  const handleViewPriceHistory = (productId: string, productName: string) => {
+    setPriceHistoryModal({ productId, productName });
   };
 
   const handleFolderModalSuccess = () => {
@@ -243,6 +249,7 @@ export default function ProductList({ refreshTrigger, folderId, searchQuery = ''
                 onDelete={handleDelete}
                 onRefresh={refreshingId ? undefined : handleRefresh}
                 onAddToFolder={!folderId ? handleAddToFolder : undefined}
+                onViewPriceHistory={handleViewPriceHistory}
               />
             </div>
           ))}
@@ -259,6 +266,14 @@ export default function ProductList({ refreshTrigger, folderId, searchQuery = ''
           onSuccess={handleFolderModalSuccess}
         />
       )}
+
+      {/* Price History Modal */}
+      <PriceHistoryModal
+        isOpen={!!priceHistoryModal}
+        onClose={() => setPriceHistoryModal(null)}
+        productId={priceHistoryModal?.productId ?? null}
+        productName={priceHistoryModal?.productName ?? ''}
+      />
     </div>
   );
 }

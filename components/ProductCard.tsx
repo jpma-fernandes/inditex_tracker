@@ -19,6 +19,7 @@ interface ProductCardProps {
   onDelete?: (id: string) => void;
   onRefresh?: (id: string) => void;
   onAddToFolder?: (id: string, name: string) => void;
+  onViewPriceHistory?: (id: string, name: string) => void;
 }
 
 function SizeBadge({ size }: { size: SizeStock }) {
@@ -47,7 +48,7 @@ function SizeBadge({ size }: { size: SizeStock }) {
   );
 }
 
-export default function ProductCard({ product, onDelete, onRefresh, onAddToFolder }: ProductCardProps) {
+export default function ProductCard({ product, onDelete, onRefresh, onAddToFolder, onViewPriceHistory }: ProductCardProps) {
   const brandColors: Record<string, string> = {
     zara: 'from-gray-600 to-gray-800',
     bershka: 'from-orange-600 to-orange-800',
@@ -220,6 +221,17 @@ export default function ProductCard({ product, onDelete, onRefresh, onAddToFolde
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-[#1a1a1a] border-[#2a2a2a]">
+              {onViewPriceHistory && (
+                <DropdownMenuItem
+                  onClick={() => onViewPriceHistory(product.id, product.name)}
+                  className="text-gray-300 hover:text-white focus:text-white focus:bg-[#2a2a2a] cursor-pointer"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                  </svg>
+                  View price history
+                </DropdownMenuItem>
+              )}
               {onAddToFolder && (
                 <DropdownMenuItem
                   onClick={() => onAddToFolder(product.id, product.name)}
