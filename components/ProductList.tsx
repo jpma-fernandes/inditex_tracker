@@ -5,6 +5,7 @@ import type { Product } from '@/types';
 import ProductCard from './ProductCard';
 import AddToFolderModal from './AddToFolderModal';
 import PriceHistoryModal from './PriceHistoryModal';
+import StockHistoryModal from './StockHistoryModal';
 import FolderGrid from './FolderGrid';
 
 interface EnrichedProduct extends Product {
@@ -36,6 +37,7 @@ export default function ProductList({ refreshTrigger, folderId, searchQuery = ''
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [folderModal, setFolderModal] = useState<{ productId: string; productName: string } | null>(null);
   const [priceHistoryModal, setPriceHistoryModal] = useState<{ productId: string; productName: string } | null>(null);
+  const [stockHistoryModal, setStockHistoryModal] = useState<{ productId: string; productName: string; sizes: any[] } | null>(null);
 
   const handleAddToFolder = (productId: string, productName: string) => {
     setFolderModal({ productId, productName });
@@ -43,6 +45,10 @@ export default function ProductList({ refreshTrigger, folderId, searchQuery = ''
 
   const handleViewPriceHistory = (productId: string, productName: string) => {
     setPriceHistoryModal({ productId, productName });
+  };
+
+  const handleViewStockHistory = (productId: string, productName: string, sizes: any[]) => {
+    setStockHistoryModal({ productId, productName, sizes });
   };
 
   const handleFolderModalSuccess = () => {
@@ -250,6 +256,7 @@ export default function ProductList({ refreshTrigger, folderId, searchQuery = ''
                 onRefresh={refreshingId ? undefined : handleRefresh}
                 onAddToFolder={!folderId ? handleAddToFolder : undefined}
                 onViewPriceHistory={handleViewPriceHistory}
+                onViewStockHistory={handleViewStockHistory}
               />
             </div>
           ))}
@@ -273,6 +280,14 @@ export default function ProductList({ refreshTrigger, folderId, searchQuery = ''
         onClose={() => setPriceHistoryModal(null)}
         productId={priceHistoryModal?.productId ?? null}
         productName={priceHistoryModal?.productName ?? ''}
+      />
+      {/* Stock History Modal */}
+      <StockHistoryModal
+        isOpen={!!stockHistoryModal}
+        onClose={() => setStockHistoryModal(null)}
+        productId={stockHistoryModal?.productId ?? null}
+        productName={stockHistoryModal?.productName ?? ''}
+        sizes={stockHistoryModal?.sizes ?? []}
       />
     </div>
   );

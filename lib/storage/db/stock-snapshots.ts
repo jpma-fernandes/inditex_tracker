@@ -70,3 +70,24 @@ export async function getAllStockSnapshots(): Promise<StockSnapshot[]> {
         timestamp: s.timestamp.toISOString(),
     }));
 }
+
+// Get stock history for a specific product and size
+export async function getStockHistoryBySize(productId: string, size: string) {
+    const snapshots = await getStockSnapshots(productId);
+
+    const history = snapshots
+        .map(snap => {
+            const found = (snap.sizes || []).find((ss: any) => ss.size === size);
+            return found ? {
+                id: snap.id,
+                productId: snap.productId,
+                size: found.size,
+                available: !!found.available,
+                lowStock: !!found.lowStock,
+                timestamp: snap.timestamp,
+            } : null;
+        })
+        .filter(Boolean) as Array<{ id: string; productId: string; size: string; available: boolean; lowStock: boolean; timestamp: string }>;
+
+    return history;
+}

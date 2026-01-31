@@ -48,6 +48,36 @@ const PRODUCTS = [
       { price: 39.95, daysAgo: 10 },
       { price: 39.95, daysAgo: 0 },
     ],
+    sizeHistory: [
+      { daysAgo: 30, sizes: [
+        { size: '34', available: true },
+        { size: '36', available: true },
+        { size: '38', available: true },
+        { size: '40', available: true },
+        { size: '42', available: true },
+      ]},
+      { daysAgo: 20, sizes: [
+        { size: '34', available: true },
+        { size: '36', available: true, lowStock: true },
+        { size: '38', available: false },
+        { size: '40', available: true },
+        { size: '42', available: false },
+      ]},
+      { daysAgo: 10, sizes: [
+        { size: '34', available: true },
+        { size: '36', available: true },
+        { size: '38', available: false },
+        { size: '40', available: true },
+        { size: '42', available: false },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: '34', available: true },
+        { size: '36', available: true },
+        { size: '38', available: false },
+        { size: '40', available: true },
+        { size: '42', available: false },
+      ]},
+    ],
   },
   {
     brand: 'zara',
@@ -66,6 +96,20 @@ const PRODUCTS = [
     priceHistory: [
       { price: 39.95, daysAgo: 30 },
       { price: 39.95, daysAgo: 0 },
+    ],
+    sizeHistory: [
+      { daysAgo: 30, sizes: [
+        { size: '36', available: true },
+        { size: '38', available: true },
+        { size: '40', available: true },
+        { size: '42', available: true },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: '36', available: true },
+        { size: '38', available: true, lowStock: true },
+        { size: '40', available: true },
+        { size: '42', available: true },
+      ]},
     ],
   },
   {
@@ -88,6 +132,32 @@ const PRODUCTS = [
       { price: 35.95, daysAgo: 15 },
       { price: 29.95, daysAgo: 0 },
     ],
+    sizeHistory: [
+      { daysAgo: 30, sizes: [
+        { size: 'S', available: true },
+        { size: 'M', available: true, lowStock: true },
+        { size: 'L', available: true },
+        { size: 'XL', available: true },
+      ]},
+      { daysAgo: 30, sizes: [
+        { size: 'S', available: false },
+        { size: 'M', available: true },
+        { size: 'L', available: true },
+        { size: 'XL', available: false },
+      ]},
+      { daysAgo: 15, sizes: [
+        { size: 'S', available: false },
+        { size: 'M', available: true, lowStock: true },
+        { size: 'L', available: false },
+        { size: 'XL', available: false },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: 'S', available: false },
+        { size: 'M', available: true },
+        { size: 'L', available: true },
+        { size: 'XL', available: false },
+      ]},
+    ],
   },
   {
     brand: 'pullandbear',
@@ -107,6 +177,22 @@ const PRODUCTS = [
     priceHistory: [
       { price: 89.95, daysAgo: 30 },
       { price: 89.95, daysAgo: 0 },
+    ],
+    sizeHistory: [
+      { daysAgo: 30, sizes: [
+        { size: 'XS', available: true },
+        { size: 'S', available: true },
+        { size: 'M', available: true },
+        { size: 'L', available: true },
+        { size: 'XL', available: true },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: 'XS', available: true },
+        { size: 'S', available: true, lowStock: true },
+        { size: 'M', available: true },
+        { size: 'L', available: true },
+        { size: 'XL', available: true },
+      ]},
     ],
   },
   {
@@ -129,6 +215,32 @@ const PRODUCTS = [
       { price: 59.95, daysAgo: 5 },
       { price: 59.95, daysAgo: 0 },
     ],
+    sizeHistory: [
+      { daysAgo: 45, sizes: [
+        { size: 'S', available: true },
+        { size: 'M', available: true },
+        { size: 'L', available: true },
+        { size: 'XL', available: true },
+      ]},
+      { daysAgo: 20, sizes: [
+        { size: 'S', available: true },
+        { size: 'M', available: false },
+        { size: 'L', available: false, lowStock: true },
+        { size: 'XL', available: true },
+      ]},
+      { daysAgo: 5, sizes: [
+        { size: 'S', available: true },
+        { size: 'M', available: false },
+        { size: 'L', available: false },
+        { size: 'XL', available: true },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: 'S', available: true },
+        { size: 'M', available: false },
+        { size: 'L', available: false },
+        { size: 'XL', available: true },
+      ]},
+    ],
   },
   {
     brand: 'massimodutti',
@@ -147,6 +259,20 @@ const PRODUCTS = [
     priceHistory: [
       { price: 119.95, daysAgo: 30 },
       { price: 119.95, daysAgo: 0 },
+    ],
+    sizeHistory: [
+      { daysAgo: 30, sizes: [
+        { size: 'XS', available: true },
+        { size: 'S', available: true },
+        { size: 'M', available: true },
+        { size: 'L', available: true },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: 'XS', available: true },
+        { size: 'S', available: true, lowStock: true },
+        { size: 'M', available: true },
+        { size: 'L', available: true },
+      ]},
     ],
   },
   {
@@ -168,6 +294,26 @@ const PRODUCTS = [
       { price: 55.95, daysAgo: 20 },
       { price: 49.95, daysAgo: 0 },
     ],
+    sizeHistory: [
+      { daysAgo: 40, sizes: [
+        { size: 'S', available: true },
+        { size: 'M', available: true },
+        { size: 'L', available: true },
+        { size: 'XL', available: true },
+      ]},
+      { daysAgo: 20, sizes: [
+        { size: 'S', available: true },
+        { size: 'M', available: true, lowStock: true },
+        { size: 'L', available: false },
+        { size: 'XL', available: true },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: 'S', available: true },
+        { size: 'M', available: true },
+        { size: 'L', available: false },
+        { size: 'XL', available: true },
+      ]},
+    ],
   },
   {
     brand: 'zara',
@@ -187,6 +333,22 @@ const PRODUCTS = [
     priceHistory: [
       { price: 59.95, daysAgo: 30 },
       { price: 59.95, daysAgo: 0 },
+    ],
+    sizeHistory: [
+      { daysAgo: 30, sizes: [
+        { size: '36', available: true },
+        { size: '37', available: true },
+        { size: '38', available: true },
+        { size: '39', available: true },
+        { size: '40', available: true },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: '36', available: true },
+        { size: '37', available: true },
+        { size: '38', available: true, lowStock: true },
+        { size: '39', available: true },
+        { size: '40', available: true },
+      ]},
     ],
   },
   {
@@ -210,6 +372,36 @@ const PRODUCTS = [
       { price: 35.95, daysAgo: 10 },
       { price: 35.95, daysAgo: 0 },
     ],
+    sizeHistory: [
+      { daysAgo: 50, sizes: [
+        { size: '36', available: true },
+        { size: '37', available: true },
+        { size: '38', available: true },
+        { size: '39', available: true },
+        { size: '40', available: true },
+      ]},
+      { daysAgo: 25, sizes: [
+        { size: '36', available: false },
+        { size: '37', available: true, lowStock: true },
+        { size: '38', available: true },
+        { size: '39', available: false },
+        { size: '40', available: true },
+      ]},
+      { daysAgo: 10, sizes: [
+        { size: '36', available: false },
+        { size: '37', available: true },
+        { size: '38', available: true },
+        { size: '39', available: false },
+        { size: '40', available: true },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: '36', available: false },
+        { size: '37', available: true },
+        { size: '38', available: true },
+        { size: '39', available: false },
+        { size: '40', available: true },
+      ]},
+    ],
   },
   {
     brand: 'zara',
@@ -230,6 +422,24 @@ const PRODUCTS = [
     priceHistory: [
       { price: 69.95, daysAgo: 30 },
       { price: 69.95, daysAgo: 0 },
+    ],
+    sizeHistory: [
+      { daysAgo: 30, sizes: [
+        { size: '36', available: true },
+        { size: '37', available: true },
+        { size: '38', available: true },
+        { size: '39', available: true },
+        { size: '40', available: true },
+        { size: '41', available: true },
+      ]},
+      { daysAgo: 0, sizes: [
+        { size: '36', available: true },
+        { size: '37', available: true },
+        { size: '38', available: true },
+        { size: '39', available: true },
+        { size: '40', available: true },
+        { size: '41', available: true },
+      ]},
     ],
   },
 ];
@@ -263,23 +473,30 @@ async function main() {
             available: s.available,
           })),
         },
+
+        //goes to relationship table 
         priceHistory: {
           create: product.priceHistory.map(ph => ({
             price: ph.price,
             timestamp: new Date(now.getTime() - ph.daysAgo * 24 * 60 * 60 * 1000),
           })),
         },
+        
+        //goes to relationship table 
+        stockHistory: product.sizeHistory && product.sizeHistory.length > 0 ? {
+          create: product.sizeHistory.map((sh: any) => ({
+            timestamp: new Date(now.getTime() - (sh.daysAgo || 0) * 24 * 60 * 60 * 1000),
+            sizes: sh.sizes,
+          })),
+        } : {
+          create: [{
+            timestamp: now,
+            sizes: product.sizes,
+          }],
+        },
       },
     });
-
-    // Create a stock snapshot for current state
-    await prisma.stockSnapshot.create({
-      data: {
-        productId: created.id,
-        timestamp: now,
-        sizes: product.sizes,
-      },
-    });
+    
 
     console.log(`  ✓ ${product.brand} - ${product.name}`);
   }

@@ -40,6 +40,7 @@ export {
     getLatestStockSnapshot,
     addStockSnapshot,
     getAllStockSnapshots,
+    getStockHistoryBySize,
     type StockSnapshot,
 } from './stock-snapshots';
 
